@@ -1,16 +1,24 @@
-# React + Vite
+# Smart Kiosk Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a voice-activated smart dashboard built to run 24/7 on a dedicated Ubuntu thinclient. It displays real-time schedule data and listens for offline voice commands, with the entire stack running locally on the machine.
 
-Currently, two official plugins are available:
+## System Architecture
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+To prevent dependency conflicts and keep the codebase maintainable, the system is split into three isolated services:
 
-## React Compiler
+* **Frontend (React + Vite):** The user interface. It is hosted locally and renders real-time telemetry and calendar data.
+* **Backend (Node.js / Express):** A local API server that handles the heavy lifting. It securely fetches and formats data from the Google Calendar API to feed to the frontend.
+* **Voice Bridge (Python):** An entirely offline voice recognition service. It uses Vosk and PyAudio to listen for a wake word ("Jarvis") and trigger dashboard commands locally, completely bypassing cloud-based speech-to-text.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Hardware & Deployment
 
-## Expanding the ESLint configuration
+* **Hardware:** Lenovo ThinkCentre M700
+* **OS:** Ubuntu Linux
+* **Display:** Hosted locally on `http://localhost:5173` and rendered via Chromium.
+* **Automated Boot:** The system requires zero manual intervention to start. An Ubuntu `.desktop` autostart configuration triggers a master shell script (`start-jarvis.sh`) immediately upon user login.
+* **Process Management:** The startup script manages local ports, boots the Node servers in the background, routes Python execution strictly through an isolated virtual environment (`venv`), and forces Chromium into a locked `--kiosk` mode with hardware autoplay enabled.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Security Posture
+
+* **Credential Management:** All Google Cloud service account keys, API endpoints, and authentication tokens are scrubbed from the codebase and managed entirely via local `.env` files.
+* **Version Control:** Strict `.gitignore` rules prevent the accidental staging of virtual environments, `node_modules`, and local system paths.
