@@ -1,20 +1,24 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css' // Adjust this if your main CSS file is App.css
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.jsx';
+import './index.css'; 
 
-// --- OUR CUSTOM ERROR CATCHER ---
+// Global Error Boundary: Catches unhandled React rendering exceptions down the component tree
+// Crucial for kiosk mode to prevent a silent "white screen of death" if a state variable is malformed
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, errorMsg: '', errorStack: '' };
   }
 
+  // React lifecycle method triggered when a child component throws an error
   static getDerivedStateFromError(error) {
     return { hasError: true, errorMsg: error.toString(), errorStack: error.stack };
   }
 
   render() {
+    // Fallback UI: Renders a high-contrast native HTML error log directly to the display 
+    // for easier debugging without needing SSH access to the ThinkCentre
     if (this.state.hasError) {
       return (
         <div style={{ backgroundColor: '#09090b', color: '#ef4444', height: '100vh', padding: '40px', fontFamily: 'monospace' }}>
@@ -29,12 +33,12 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
-// --------------------------------
 
+// Mount the application tree wrapped in StrictMode for development checks and the ErrorBoundary for runtime safety
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
   </React.StrictMode>,
-)
+);
