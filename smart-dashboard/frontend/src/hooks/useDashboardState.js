@@ -38,6 +38,7 @@ export function useDashboardState() {
 
   // Auto-rotate calendar views when idling on the home screen
   // Month view holds for 60s, week view holds for 15s
+  // TO-DO FIND OPTIMAL TIMING FOR ROTATION BASED ON USER FEEDBACK
   useEffect(() => {
     let rotationTimer;
     if (guitarData?.current_view === 'calendar') {

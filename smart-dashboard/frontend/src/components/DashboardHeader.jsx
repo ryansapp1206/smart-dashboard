@@ -16,7 +16,7 @@ export default function DashboardHeader({ time, today, apiLatency, requestCount,
       <div className="flex-1 flex justify-center items-start pt-12">
         <div className="flex items-center gap-8 font-mono text-[1.8rem] text-zinc-500 bg-zinc-900/40 border border-zinc-800/80 px-10 py-8 rounded-full backdrop-blur-sm">
           
-          {/* Connection status indicator dot (Pulses emerald when connected, turns red on error) */}
+          {/* Connection status indicator dot */}
           <span className="flex items-center gap-4">
             <div className={`w-4 h-4 rounded-full shadow-[0_0_12px_currentColor] ${apiLatency === 'ERR' ? 'bg-red-500 text-red-500' : 'bg-emerald-500 text-emerald-500 animate-pulse'}`}></div> 
             {import.meta.env.VITE_DISPLAY_IP}

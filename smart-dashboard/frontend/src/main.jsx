@@ -3,8 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css'; 
 
-// Global Error Boundary: Catches unhandled React rendering exceptions down the component tree
-// Crucial for kiosk mode to prevent a silent "white screen of death" if a state variable is malformed
+// Global Error Boundary: Catches unhandled React rendering exceptions down the component tree (implemented due to prior issues)
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);

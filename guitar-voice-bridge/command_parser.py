@@ -8,7 +8,7 @@ def extract_score(text):
     """
     text = text.replace(" and ", " ")
     
-    # 1. Normalize edge-case spoken words to standard number words
+    # Normalize edge-case spoken words to standard number words
     for word, num in replacements.items():
         text = text.replace(word, num)
         
@@ -16,7 +16,7 @@ def extract_score(text):
     nums = []
     current_num = None
     
-    # 2. Parse sequential number words into actual integers
+    # Parse sequential number words into actual integers
     for w in words:
         val = None
         if w.isdigit():
@@ -59,16 +59,14 @@ def extract_score(text):
 def parse_intent(padded_text, current_switches):
     """
     Core Logic Engine: Translates clean Vosk transcriptions into actionable state updates.
-    Includes phonetic variations (e.g., "colander" for "calendar") to account for offline STT inaccuracies.
+    Includes phonetic variation to account for offline STT inaccuracies.
     
     Returns a tuple: (action_type, data)
     - action_type: "standard", "requires_confirmation", "error", or "ignore".
     - data: The dictionary payload for the backend API, or an error string.
     """
     
-    # ---------------------------------------------------------
-    # 1. TIMER & METRONOME CONTROLS
-    # ---------------------------------------------------------
+    # TIMER & METRONOME CONTROLS
     if any(w in padded_text for w in [" timer ", " time her ", " metronome ", " metro gnome ", " metro ", " bpm ", " beat ", " mentor know ", " metro know "]):
         
         # Stop command
@@ -76,7 +74,7 @@ def parse_intent(padded_text, current_switches):
             print("Action: Stopping Metronome/Timer")
             return "standard", {"metronome_bpm": 0, "timer_active": False}
             
-        # 1-Minute Practice Timer
+        # 1 Minute Practice Timer
         elif any(w in padded_text for w in [" timer ", " time her "]):
             print("Action: Starting 1-Minute Timer")
             return "standard", {"timer_active": True, "metronome_bpm": 0, "current_view": "hub"}
@@ -90,9 +88,7 @@ def parse_intent(padded_text, current_switches):
             else:
                 return "error", "Invalid BPM parsed."
 
-    # ---------------------------------------------------------
-    # 2. VIEW NAVIGATION
-    # ---------------------------------------------------------
+    # VIEW NAVIGATION
     elif any(w in padded_text for w in [" hub ", " pub ", " cub ", " sub ", " chart ", " tart ", " shart ", " scores ", " changes ", " tracking ", " list ", " grid ", " overview ", " over view "]):
         print("Action: Loading Hub")
         return "standard", {"current_view": "hub"}
@@ -105,10 +101,8 @@ def parse_intent(padded_text, current_switches):
         print("Action: Loading Help Screen")
         return "standard", {"current_view": "help"}
 
-    # ---------------------------------------------------------
-    # 3. DATABASE UPDATES (Two-Step Action)
+    # DATABASE UPDATES
     # Target Syntax: "Update [Chord 1] to [Chord 2] to [Score]"
-    # ---------------------------------------------------------
     elif any(w in padded_text for w in [" update ", " up date ", " edit ", " head it ", " swap ", " swab ", " slop ", " modify ", " set "]):
         score = extract_score(padded_text)
         temp_text = padded_text
@@ -161,9 +155,7 @@ def parse_intent(padded_text, current_switches):
         else:
             return "error", f"Update parsing failed. Chords: {found_chords}, Score: {score}. Aborting."
 
-    # ---------------------------------------------------------
-    # 4. HOME & DASHBOARD RETURN
-    # ---------------------------------------------------------
+    # HOME & DASHBOARD RETURN
     elif any(w in padded_text for w in [" calendar ", " colander ", " home ", " dome ", " comb ", " close ", " clothes ", " exit ", " eggs it ", " dashboard ", " dash board ", " main ", " return ", " back ", " stop ", " cancel ", " dash for ", " gosh border ", " dash or "]):
         print("Action: Returning to Dashboard")
         # Returning home explicitly clears any active practice tools
@@ -173,10 +165,8 @@ def parse_intent(padded_text, current_switches):
         print("Action: Loading Blank Template")
         return "standard", {"current_view": "template"}   
         
-    # ---------------------------------------------------------
-    # 5. SINGLE CHORD FALLBACK
+    # SINGLE CHORD FALLBACK
     # If no structural commands matched, check if the user just yelled a chord name
-    # ---------------------------------------------------------
     else:
         identified_chord = None
         for variation, actual_chord in sorted(chord_map.items(), key=lambda x: len(x[0]), reverse=True):

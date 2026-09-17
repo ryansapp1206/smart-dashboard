@@ -19,7 +19,7 @@ export default function ChordLibrary({ chords }) {
             {/* Dynamically generated SVG Chord Diagram */}
             <svg className="h-full w-auto drop-shadow-lg" viewBox="0 0 600 1000">
               
-              {/* Nut (Top heavy line) */}
+              {/* Guitar nut (Top heavy line) */}
               <line x1="50" y1="120" x2="550" y2="120" stroke="#e4e4e7" strokeWidth="16" strokeLinecap="round" />
               
               {/* Fret wires */}
@@ -27,7 +27,7 @@ export default function ChordLibrary({ chords }) {
                 <line key={`fret-${fret}`} x1="50" y1={fret * 200 + 120} x2="550" y2={fret * 200 + 120} stroke="#3f3f46" strokeWidth="6" />
               ))}
               
-              {/* Strings (Stroke width decreases dynamically left-to-right to simulate realistic string gauges) */}
+              {/* Strings (With different widths, because why not?) */}
               {stringArray.map((string, idx) => (
                 <line key={`string-${string}`} x1={string * 100 + 50} y1="120" x2={string * 100 + 50} y2="920" stroke="#71717a" strokeWidth={6 - idx * 0.6} />
               ))}
@@ -36,13 +36,14 @@ export default function ChordLibrary({ chords }) {
               {chordArr.map((fretPos, stringIdx) => {
                 const x = stringIdx * 100 + 50; 
                 
-                // Muted string (Red X above the nut)
+                // TO-DO: FIX HEIGHT ISSUES FOR STRING INDICATORS
+                // Muted string (Red X)
                 if (fretPos === -1) return <text key={`mute-${stringIdx}`} x={x} y="70" fill="#f43f5e" fontSize="60" fontFamily="sans-serif" fontWeight="bold" textAnchor="middle">X</text>;
                 
-                // Open string (Blue hollow circle above the nut)
+                // Open string (Blue hollow circle)
                 if (fretPos === 0) return <circle key={`open-${stringIdx}`} cx={x} cy="60" r="20" fill="none" stroke="#3b82f6" strokeWidth="6" />;
                 
-                // Fretted note (Solid blue circle placed within the target fret space)
+                // Fretted note (Solid blue circle)
                 if (fretPos > 0) return <circle key={`dot-${stringIdx}`} cx={x} cy={(fretPos - 1) * 200 + 220} r="35" fill="#3b82f6" />;
                 
                 return null;

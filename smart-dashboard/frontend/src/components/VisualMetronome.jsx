@@ -12,12 +12,12 @@ export default function VisualMetronome({ bpm = 0, currentView, timerActive }) {
     }
   }, []);
 
-  // Synthesizes a sharp, percussive metronome "click" natively
+  //  Creates a metronome "click" natively
   const playClick = () => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
     
-    // Resume context if suspended (browser autoplay policy safeguard)
+    // Resume context if suspended
     if (ctx.state === 'suspended') ctx.resume();
     
     const oscillator = ctx.createOscillator();
@@ -26,7 +26,7 @@ export default function VisualMetronome({ bpm = 0, currentView, timerActive }) {
     oscillator.connect(gainNode);
     gainNode.connect(ctx.destination);
     
-    // Envelope shaping: Rapid pitch and volume drop to simulate a mechanical click
+    // Rapid pitch and volume drop to simulate a click
     oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(800, ctx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);

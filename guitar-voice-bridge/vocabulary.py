@@ -20,7 +20,7 @@ word_to_num = {
 }
 
 chord_map = {
-    # --- MINOR CHORDS ---
+    # MINOR CHORDS
     " a minor ": "Am", " ay minor ": "Am", " aim in her ": "Am", " a miner ": "Am",
     " eight minor ": "Am", " ate minor ": "Am", " a minner ": "Am", " a myner ": "Am",
     " amen or ": "Am", " a might ": "Am", " aiming her ": "Am", " a liner ": "Am",
@@ -43,7 +43,7 @@ chord_map = {
     " he higher ": "Em", " ee higher ": "Em", " you minor ": "Em", " yi minor ": "Em",
     " even or ": "Em",
 
-    # --- MAJOR CHORDS ---
+    # MAJOR CHORDS
     " a chord ": "A", " a cord ": "A", " a board ": "A", " a court ": "A", " a core ": "A",
     " hey chord ": "A", " eight chord ": "A", " ay chord ": "A", " a cool ": "A",
     " hey cool ": "A", " a for ": "A", " hey for ": "A", " a card ": "A", " ate chord ": "A",
@@ -77,7 +77,7 @@ chord_map = {
     " cheap chord ": "G", " g board ": "G", " jean chord ": "G", " jee chord ": "G",
     " chi chord ": "G", " cheap board ": "G",
 
-    # --- SINGLE LETTERS ---
+    # SINGLE LETTERS
     " a ": "A", " ay ": "A", " hey ": "A", " aye ": "A", " eight ": "A", " ate ": "A", " ape ": "A",
     " c ": "C", " see ": "C", " sea ": "C", " z ": "C", " si ": "C", " zee ": "C", " seat ": "C", " seed ": "C",
     " d ": "D", " dee ": "D", " de ": "D", " tee ": "D", " tea ": "D", " dean ": "D",

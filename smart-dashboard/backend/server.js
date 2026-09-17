@@ -19,22 +19,20 @@ const auth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/calendar.events']
 });
 
-// ---------------------------------------------------------
 // CALENDAR API ROUTE
-// ---------------------------------------------------------
 app.get('/api/calendar', async (req, res) => {
   const calendar = google.calendar({ version: 'v3', auth });
   try {
     const now = new Date();
 
     // Establish the time window for fetched events
-    // 1. Start of the current month (captures past events from this month)
+    // Start of the current month
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
 
-    // 2. End of the current month
+    // End of the current month
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-    // 3. Exactly 7 days from now (end of day)
+    // Exactly 7 days from now (end of day)
     const sevenDaysOut = new Date(now);
     sevenDaysOut.setDate(now.getDate() + 7);
     sevenDaysOut.setHours(23, 59, 59, 999);
@@ -57,10 +55,7 @@ app.get('/api/calendar', async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------
 // LOCAL STATE MANAGEMENT ROUTES
-// ---------------------------------------------------------
-// Set file path for the local JSON "database"
 const dataPath = path.join(__dirname, 'guitar_data.json');
 
 // Fetch the current dashboard state
@@ -71,6 +66,7 @@ app.get('/api/guitar', (req, res) => {
         res.json(JSON.parse(data));
     } catch (parseError) {
         // Race condition safeguard: If file is read mid-write, return 204 (No Content) to prevent JSON parse crash
+        // TO-DO COMPLETELY REMOVE POSSIBILITY OF RACE CONDITION
         res.status(204).send(); 
     }
   });
@@ -84,6 +80,7 @@ app.post('/api/guitar/update', (req, res) => {
     let guitarData = JSON.parse(data);
 
     // Selectively update state properties only if they exist in the incoming request
+    // TO-DO REFACTOR AT A LATER DATE
     if (req.body.current_view) {
       guitarData.current_view = req.body.current_view;
     }

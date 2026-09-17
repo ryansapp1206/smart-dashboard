@@ -10,7 +10,7 @@ export default function ConfirmationModal({ pendingUpdate }) {
       <div className="bg-zinc-900 border border-zinc-700 rounded-[2rem] p-16 text-center max-w-5xl shadow-[0_30px_100px_rgba(0,0,0,0.8),0_0_40px_rgba(59,130,246,0.2)]">
         <h2 className="text-[4rem] text-zinc-100 font-extrabold tracking-tight mb-8">Confirm Action</h2>
         
-        {/* Inject the dynamically parsed variables directly from the voice payload */}
+        {/* Inject the parsed variables directly from the voice payload */}
         <p className="text-[3.2rem] text-zinc-400 leading-tight">
           Update <span className="text-blue-400 font-black">{pendingUpdate.chord1}</span> to <span className="text-blue-400 font-black">{pendingUpdate.chord2}</span> <br/>
           New Score: <span className="text-white font-black">{pendingUpdate.score}</span> BPM

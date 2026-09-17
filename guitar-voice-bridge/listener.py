@@ -5,13 +5,11 @@ import json
 from openwakeword.model import Model
 from vosk import Model as VoskModel, KaldiRecognizer
 
-# IMPORT THE NEW LOGIC ENGINE (Decoupled text parsing)
+# IMPORT THE LOGIC ENGINE
 from command_parser import parse_intent
 
-# ---------------------------------------------------------
-# MODEL INITIALIZATION (100% Offline processing)
-# ---------------------------------------------------------
-owwModel = Model() # OpenWakeWord model for detecting "Hey Jarvis"
+# MODEL INITIALIZATION
+owwModel = Model() # OpenWakeWord model for detecting wake word
 try:
     vosk_model = VoskModel("model") # Vosk model for full speech-to-text
     recognizer = KaldiRecognizer(vosk_model, 16000)
@@ -19,21 +17,17 @@ except Exception as e:
     print("VOSK ERROR: Could not find the 'model' folder.")
     exit(1)
 
-# ---------------------------------------------------------
 # AUDIO HARDWARE CONFIGURATION
-# ---------------------------------------------------------
 CHUNK = 1280
 RATE = 16000
 audio = pyaudio.PyAudio()
-# Open a continuous mono audio stream from the default microphone
+# Open a continuous mono audio stream from the microphone
 mic_stream = audio.open(format=pyaudio.paInt16, channels=1, rate=RATE, input=True, frames_per_buffer=CHUNK)
 
 API_URL = "http://localhost:3001/api/guitar/update"
 GET_URL = "http://localhost:3001/api/guitar"
 
-# ---------------------------------------------------------
 # NETWORK HELPERS
-# ---------------------------------------------------------
 def update_backend(new_data):
     """Fetches the current state, merges new data, and pushes it to the Node backend."""
     try:
@@ -63,19 +57,17 @@ def flush_microphone():
         
     print("Listening for wake word...")
 
-# ---------------------------------------------------------
 # MAIN LISTENING LOOP
-# ---------------------------------------------------------
 print("Listener active. Waiting for wake word...")
 
 while True:
-    # 1. Continually read audio chunks
+    # Continually read audio chunks
     try:
         audio_data = np.frombuffer(mic_stream.read(CHUNK, exception_on_overflow=False), dtype=np.int16)
     except Exception:
         continue
         
-    # 2. Check for the wake word
+    # Check for the wake word
     prediction = owwModel.predict(audio_data)
     
     # If confidence threshold is met, activate command listener
@@ -90,7 +82,7 @@ while True:
         update_backend({"is_listening": True})
         print("Listening for command...")
         
-        # 3. Record the spoken command (max ~6 seconds / 80 chunks)
+        # Record the spoken command (max ~6 seconds / 80 chunks)
         command_audio = b''
         for _ in range(80): 
             chunk = mic_stream.read(CHUNK, exception_on_overflow=False)
@@ -99,7 +91,7 @@ while True:
             if recognizer.AcceptWaveform(chunk):
                 break 
             
-        # 4. Clean the transcript
+        # Clean the transcript
         spoken_text = json.loads(recognizer.FinalResult()).get("text", "").lower()
         spoken_text = spoken_text.replace("hey jarvis", "").replace("jarvis", "").strip()
         print(f"Parsed input: '{spoken_text}'")
@@ -110,7 +102,7 @@ while True:
             
         padded_text = f" {spoken_text} "
 
-        # 5. FETCH CURRENT STATE BEFORE PARSING (Protected against backend crashes)
+        # FETCH CURRENT STATE BEFORE PARSING (Protected against backend crashes)
         try:
             current_state = requests.get(GET_URL, timeout=2).json()
             switches = current_state.get('switches', [])
@@ -119,22 +111,22 @@ while True:
             flush_microphone()
             continue
 
-        # 6. SEND TO THE LOGIC ENGINE (Returns what action to take)
+        # SEND TO THE LOGIC ENGINE (Returns what action to take)
         action_type, result = parse_intent(padded_text, switches)
 
-        # 7. EXECUTE THE ACTION
+        # EXECUTE THE ACTION
         if action_type == "standard":
-            # Simple state updates (e.g., changing views, starting timers)
+            # Simple state updates
             update_backend(result)
             if "current_view" in result:
                 print(f"State updated: {result['current_view']}")
                 
         elif action_type == "requires_confirmation":
-            # Two-step action (e.g., modifying database records)
+            # Two-step action
             print(f"Action: Initiating update for {result['c1']} <-> {result['c2']} to {result['score']} bpm")
             update_backend(result['payload']) # Triggers confirmation modal on UI
             
-            # Briefly take over the microphone to listen for "Yes" or "No"
+            # Briefly take over the microphone to listen for Yes or No
             print("Awaiting confirmation...")
             conf_audio = b''
             for _ in range(60): 

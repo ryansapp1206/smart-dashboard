@@ -1,11 +1,12 @@
 export default function HelpScreen() {
+  // NEEDS UPDATED WITH NEW COMMANDS
   // Static reference screen mapping out available voice commands for the user
   return (
-    // Full-screen overlay with a subtle radial gradient background
+    // Full-screen overlay with a radial gradient background
     <div key="help" className="fixed inset-0 box-border overflow-hidden bg-zinc-950 px-32 py-12 flex flex-col items-center justify-center animate-fade-in bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-zinc-900 via-zinc-950 to-zinc-950">
       
       <h1 className="text-[4rem] font-bold text-zinc-100 mb-12 tracking-widest uppercase flex items-center gap-6">
-        {/* Pulsing blue dot mimics the global listening indicator for visual consistency */}
+        {/* Pulsing blue dot mimics the global listening indicator*/}
         <div className="w-6 h-6 bg-blue-500 rounded-full animate-pulse shadow-[0_0_20px_#3b82f6]"></div>
         System Commands
       </h1>
@@ -34,7 +35,7 @@ export default function HelpScreen() {
           <p className="text-[2rem] text-zinc-400 mt-2"><span className="text-zinc-100 font-medium">"Stop metronome"</span></p>
         </div>
 
-        {/* Full-width block (col-span-3) for the complex 2-step database update syntax */}
+        {/* Full-width block for the complex 2-step database update syntax */}
         <div className="bg-zinc-900/50 rounded-2xl p-10 border border-zinc-800 col-span-3 text-center">
           <h2 className="text-[2rem] text-blue-400 font-semibold mb-4 tracking-wide uppercase">Database Update</h2>
           <p className="text-[2.5rem] text-zinc-400 font-light">

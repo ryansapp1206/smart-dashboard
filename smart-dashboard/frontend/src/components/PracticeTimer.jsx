@@ -5,7 +5,7 @@ export default function PracticeTimer({ timerActive }) {
   const [timeLeft, setTimeLeft] = useState(0);
   const audioCtxRef = useRef(null);
 
-  // Synthesizes a dual-tone chime (A5 & C#6) using the Web Audio API.
+  // Creates a dual-tone chime (A5 & C#6) using the Web Audio API.
   // This ensures the alert plays natively without relying on external media files.
   const playChime = () => {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -26,7 +26,6 @@ export default function PracticeTimer({ timerActive }) {
     osc1.connect(gainNode); osc2.connect(gainNode);
     gainNode.connect(ctx.destination);
     
-    // Envelope shaping: Instant attack, 2-second exponential fade out
     gainNode.gain.setValueAtTime(0, ctx.currentTime);
     gainNode.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.05);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2);
@@ -82,7 +81,7 @@ export default function PracticeTimer({ timerActive }) {
 
   if (phase === 'idle') return null;
 
-  // Phase 1: Full-screen countdown block so user can get hands on the fretboard
+  // Full-screen countdown block so user can get hands on the fretboard
   if (phase === 'getReady') {
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 bg-zinc-950/80 backdrop-blur-md pointer-events-none">
@@ -96,7 +95,7 @@ export default function PracticeTimer({ timerActive }) {
   const isDone = phase === 'done';
   return (
     <>
-      {/* Background vignette (Pulses red when finished) */}
+      {/* Background overlay (Pulses red when finished) */}
       <div className={`fixed inset-0 pointer-events-none z-40 transition-opacity duration-1000 ${isDone ? 'animate-pulse shadow-[inset_0_0_120px_rgba(239,68,68,0.3)] bg-[radial-gradient(ellipse_at_center,_transparent_50%,_rgba(239,68,68,0.2)_100%)]' : 'shadow-[inset_0_0_40px_rgba(239,68,68,0.1)]'}`}></div>
       
       {/* Floating timer pill at the bottom center of the screen */}

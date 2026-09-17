@@ -2,6 +2,7 @@ import DashboardHeader from '../components/DashboardHeader.jsx';
 
 // Color-codes calendar events based on keyword matching.
 // Explicitly highlights core coursework (Computer Science and Mathematics) with distinct gradients.
+// TO-DO: ADD VOICE COMMANDS FOR ADJUSTING COLOR CORDINATION FOR FUTURE EVENTS AND CLASSES
 const getEventStyle = (title) => {
   if (title.includes('CS')) return 'border-blue-500 bg-gradient-to-r from-blue-500/10 to-transparent text-blue-100';
   if (title.includes('MATH')) return 'border-rose-500 bg-gradient-to-r from-rose-500/10 to-transparent text-rose-100';
@@ -46,7 +47,7 @@ export default function CalendarMonth({ time, weather, events, apiLatency, reque
             const dayOfWeek = (firstDay + day - 1) % 7;
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
             
-            // Dim weekends and heavily highlight the current day for peripheral glanceability
+            // Dim weekends and heavily highlight the current day
             let cellClasses = 'bg-zinc-900/40 border-zinc-800/50';
             if (isWeekend) cellClasses = 'bg-zinc-950/40 border-zinc-900/50';
             if (isToday) cellClasses = 'bg-blue-900/10 border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.1)]';

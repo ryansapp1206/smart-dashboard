@@ -1,7 +1,8 @@
 import DashboardHeader from '../components/DashboardHeader.jsx';
 
 // Color-codes calendar events based on keyword matching.
-// Explicitly highlights core coursework (Computer Science and Mathematics) with distinct gradients.
+// Explicitly highlights core coursework with distinct gradients.
+// TO-DO: ADD VOICE COMMANDS FOR ADJUSTING COLOR CORDINATION FOR FUTURE EVENTS AND CLASSES
 const getEventStyle = (title) => {
   if (title.includes('CS')) return 'border-blue-500 bg-gradient-to-r from-blue-500/10 to-transparent text-blue-100';
   if (title.includes('MATH')) return 'border-rose-500 bg-gradient-to-r from-rose-500/10 to-transparent text-rose-100';
@@ -38,10 +39,10 @@ export default function CalendarWeek({ time, weather, events, apiLatency, reques
               const eventsThisDay = events.filter(e => e.start.getDate() === d.getDate() && e.start.getMonth() === d.getMonth() && e.start.getFullYear() === d.getFullYear());
               
               return (
-                // Highlight the current day with a blue tint and border for quick visual scanning
+                // Highlight the current day with a blue tint and border
                 <div key={d.toISOString()} className={`flex-1 rounded-2xl flex items-center p-6 gap-8 transition-colors ${isToday ? 'bg-blue-900/10 border border-blue-500/30' : 'bg-zinc-900/40 border border-zinc-800/50'}`}>
                   
-                  {/* Date block (e.g., "MON 14") */}
+                  {/* Date block*/}
                   <div className="flex flex-col items-center justify-center min-w-[100px]">
                     <span className={`text-[1.6rem] uppercase font-bold tracking-widest ${isToday ? 'text-blue-400' : 'text-zinc-500'}`}>{d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
                     <span className={`text-[4rem] font-black tracking-tighter leading-none ${isToday ? 'text-blue-100' : 'text-zinc-300'}`}>{d.getDate()}</span>
