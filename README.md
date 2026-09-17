@@ -15,7 +15,7 @@ A voice-controlled dashboard built to run 24/7 on a dedicated Ubuntu thin client
 
 <p align="center">
   <img src="/assets/Chord-library.png" width="49%" alt="Chord Library" />
-  <img src="assets/chord-change-hub.png width="49%" alt="Performance Matrix" />
+  <img src="assets/chord-change-hub.png" width="49%" alt="Performance Matrix" />
 </p>
 
 * **Chord Hub:** Tracks chord transition speeds (BPM) with color-coded mastery thresholds.
