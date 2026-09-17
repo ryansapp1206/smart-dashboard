@@ -1,0 +1,26 @@
+# Node & Vite (Frontend/Backend)
+node_modules/
+dist/
+dist-ssr/
+npm-debug.log*
+
+# Python & AI (Voice Bridge)
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+model/
+
+# Secrets & Keys
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+
+# OS & Editor Files
+.vscode/*
+!.vscode/extensions.json
+.DS_Store

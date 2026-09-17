@@ -1,0 +1,243 @@
+{
+  "chords": {
+    "A": [
+      -1,
+      0,
+      2,
+      2,
+      2,
+      0
+    ],
+    "Am": [
+      -1,
+      0,
+      2,
+      2,
+      1,
+      0
+    ],
+    "C": [
+      -1,
+      3,
+      2,
+      0,
+      1,
+      0
+    ],
+    "D": [
+      -1,
+      -1,
+      0,
+      2,
+      3,
+      2
+    ],
+    "Dm": [
+      -1,
+      -1,
+      0,
+      2,
+      3,
+      1
+    ],
+    "E": [
+      0,
+      2,
+      2,
+      1,
+      0,
+      0
+    ],
+    "Em": [
+      0,
+      2,
+      2,
+      0,
+      0,
+      0
+    ],
+    "G": [
+      3,
+      -1,
+      0,
+      0,
+      0,
+      3
+    ]
+  },
+  "switches": [
+    {
+      "from": "A",
+      "to": "Am",
+      "bpm": 60,
+      "score": 68
+    },
+    {
+      "from": "A",
+      "to": "C",
+      "bpm": 60,
+      "score": 50
+    },
+    {
+      "from": "A",
+      "to": "D",
+      "bpm": 60,
+      "score": 73
+    },
+    {
+      "from": "A",
+      "to": "Dm",
+      "bpm": 60,
+      "score": 50
+    },
+    {
+      "from": "A",
+      "to": "E",
+      "bpm": 60,
+      "score": 68
+    },
+    {
+      "from": "A",
+      "to": "Em",
+      "bpm": 60,
+      "score": 86
+    },
+    {
+      "from": "A",
+      "to": "G",
+      "bpm": 60,
+      "score": 50
+    },
+    {
+      "from": "Am",
+      "to": "C",
+      "bpm": 60,
+      "score": 55
+    },
+    {
+      "from": "Am",
+      "to": "D",
+      "bpm": 60,
+      "score": 68
+    },
+    {
+      "from": "Am",
+      "to": "Dm",
+      "bpm": 60,
+      "score": 46
+    },
+    {
+      "from": "Am",
+      "to": "E",
+      "bpm": 60,
+      "score": 75
+    },
+    {
+      "from": "Am",
+      "to": "Em",
+      "bpm": 60,
+      "score": 91
+    },
+    {
+      "from": "Am",
+      "to": "G",
+      "bpm": 60,
+      "score": 55
+    },
+    {
+      "from": "C",
+      "to": "D",
+      "bpm": 60,
+      "score": 53
+    },
+    {
+      "from": "C",
+      "to": "Dm",
+      "bpm": 60,
+      "score": 41
+    },
+    {
+      "from": "C",
+      "to": "E",
+      "bpm": 60,
+      "score": 48
+    },
+    {
+      "from": "C",
+      "to": "Em",
+      "bpm": 60,
+      "score": 68
+    },
+    {
+      "from": "C",
+      "to": "G",
+      "bpm": 60,
+      "score": 45
+    },
+    {
+      "from": "D",
+      "to": "Dm",
+      "bpm": 60,
+      "score": 54
+    },
+    {
+      "from": "D",
+      "to": "E",
+      "bpm": 60,
+      "score": 73
+    },
+    {
+      "from": "D",
+      "to": "Em",
+      "bpm": 60,
+      "score": 89
+    },
+    {
+      "from": "D",
+      "to": "G",
+      "bpm": 60,
+      "score": 63
+    },
+    {
+      "from": "Dm",
+      "to": "E",
+      "bpm": 60,
+      "score": 51
+    },
+    {
+      "from": "Dm",
+      "to": "Em",
+      "bpm": 60,
+      "score": 59
+    },
+    {
+      "from": "Dm",
+      "to": "G",
+      "bpm": 60,
+      "score": 51
+    },
+    {
+      "from": "E",
+      "to": "Em",
+      "bpm": 60,
+      "score": 100
+    },
+    {
+      "from": "E",
+      "to": "G",
+      "bpm": 60,
+      "score": 73
+    },
+    {
+      "from": "Em",
+      "to": "G",
+      "bpm": 60,
+      "score": 89
+    }
+  ],
+  "current_view": "calendar",
+  "is_listening": false,
+  "pending_update": null,
+  "metronome_bpm": 0,
+  "timer_active": false
+}
