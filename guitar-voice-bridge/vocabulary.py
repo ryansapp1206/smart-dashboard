@@ -20,11 +20,17 @@ word_to_num = {
 }
 
 chord_map = {
+    # --- MINOR CHORDS ---
     " a minor ": "Am", " ay minor ": "Am", " aim in her ": "Am", " a miner ": "Am",
     " eight minor ": "Am", " ate minor ": "Am", " a minner ": "Am", " a myner ": "Am",
     " amen or ": "Am", " a might ": "Am", " aiming her ": "Am", " a liner ": "Am",
     " a my nor ": "Am", " a diner ": "Am", " a finer ": "Am", " pay minor ": "Am",
     " day minor ": "Am", " a meaner ": "Am", " hey minor ": "Am",
+
+    " b minor ": "Bm", " be minor ": "Bm", " bee minor ": "Bm", " me minor ": "Bm", 
+    " vee minor ": "Bm", " v minor ": "Bm", " bean miner ": "Bm",
+
+    " c minor ": "Cm", " see minor ": "Cm", " sea minor ": "Cm", " z minor ": "Cm",
 
     " d minor ": "Dm", " dee minor ": "Dm", " the minor ": "Dm", " the miner ": "Dm",
     " demon or ": "Dm", " de minor ": "Dm", " team in her ": "Dm", " the higher ": "Dm",
@@ -35,10 +41,9 @@ chord_map = {
     " e minor ": "Em", " ee minor ": "Em", " he minor ": "Em", " he miner ": "Em",
     " e miner ": "Em", " meaner ": "Em", " eat minor ": "Em", " e higher ": "Em",
     " he higher ": "Em", " ee higher ": "Em", " you minor ": "Em", " yi minor ": "Em",
-    " even or ": "Em", " see minor ": "Em", " sea minor ": "Em", " c minor ": "Em",
-    " me minor ": "Em", " be minor ": "Em", " vee minor ": "Em", " v minor ": "Em",
-    " z minor ": "Em", " b minor ": "Em",
+    " even or ": "Em",
 
+    # --- MAJOR CHORDS ---
     " a chord ": "A", " a cord ": "A", " a board ": "A", " a court ": "A", " a core ": "A",
     " hey chord ": "A", " eight chord ": "A", " ay chord ": "A", " a cool ": "A",
     " hey cool ": "A", " a for ": "A", " hey for ": "A", " a card ": "A", " ate chord ": "A",
@@ -49,7 +54,7 @@ chord_map = {
     " z chord ": "C", " see board ": "C", " see core ": "C", " c cool ": "C",
     " see cool ": "C", " c card ": "C", " see card ": "C", " seat chord ": "C",
     " seed chord ": "C", " seek chord ": "C", " secret ": "C", " zee chord ": "C",
-    " si chord ": "C", " she chord ": "C",
+    " si chord ": "C", " she chord ": "C", " seem to ": "C", " seem ": "C",
 
     " d chord ": "D", " dee chord ": "D", " d cord ": "D", " dee cord ": "D",
     " decor ": "D", " decord ": "D", " beat chord ": "D", " d cool ": "D",
@@ -72,6 +77,7 @@ chord_map = {
     " cheap chord ": "G", " g board ": "G", " jean chord ": "G", " jee chord ": "G",
     " chi chord ": "G", " cheap board ": "G",
 
+    # --- SINGLE LETTERS ---
     " a ": "A", " ay ": "A", " hey ": "A", " aye ": "A", " eight ": "A", " ate ": "A", " ape ": "A",
     " c ": "C", " see ": "C", " sea ": "C", " z ": "C", " si ": "C", " zee ": "C", " seat ": "C", " seed ": "C",
     " d ": "D", " dee ": "D", " de ": "D", " tee ": "D", " tea ": "D", " dean ": "D",

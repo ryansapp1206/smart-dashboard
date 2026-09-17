@@ -54,7 +54,12 @@ const dataPath = path.join(__dirname, 'guitar_data.json');
 app.get('/api/guitar', (req, res) => {
   fs.readFile(dataPath, 'utf8', (err, data) => {
     if (err) return res.status(500).send("Error reading guitar data");
-    res.json(JSON.parse(data));
+    try {
+        res.json(JSON.parse(data));
+    } catch (parseError) {
+        // If read mid-write, just send a 204 No Content to prevent a crash
+        res.status(204).send(); 
+    }
   });
 });
 

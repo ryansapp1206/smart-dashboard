@@ -91,8 +91,13 @@ while True:
         padded_text = f" {spoken_text} "
 
         # FETCH CURRENT STATE BEFORE PARSING
-        current_state = requests.get(GET_URL).json()
-        switches = current_state.get('switches', [])
+        try:
+            current_state = requests.get(GET_URL, timeout=2).json()
+            switches = current_state.get('switches', [])
+        except Exception as e:
+            print("Backend unreachable, aborting command.")
+            flush_microphone()
+            continue
 
         # SEND TO THE NEW PARSER
         action_type, result = parse_intent(padded_text, switches)

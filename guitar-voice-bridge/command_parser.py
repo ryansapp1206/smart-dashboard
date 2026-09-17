@@ -52,7 +52,7 @@ def parse_intent(padded_text, current_switches):
     Parses spoken text and returns a tuple: (action_type, data)
     action_type can be "standard", "requires_confirmation", "error", or "ignore".
     """
-    if any(w in padded_text for w in [" timer ", " time her ", " metronome ", " metro gnome ", " metro ", " bpm ", " beat ", " be ", " mentor know ", " measuring ", " metro know "]):
+    if any(w in padded_text for w in [" timer ", " time her ", " metronome ", " metro gnome ", " metro ", " bpm ", " beat ", " mentor know ", " metro know "]):
         if any(w in padded_text for w in [" stop ", " cancel ", " off ", " kill "]):
             print("Action: Stopping Metronome/Timer")
             return "standard", {"metronome_bpm": 0, "timer_active": False}
