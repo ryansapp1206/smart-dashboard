@@ -9,14 +9,20 @@ export function useDashboardState() {
   const [apiLatency, setApiLatency] = useState(0);
   const [requestCount, setRequestCount] = useState(0);
 
-  // 1. Guitar Data & Telemetry Polling (Every 500ms)
+  // Poll local state database every 500ms to instantly reflect voice commands
+  // Tracks request latency for the frontend debug UI
   useEffect(() => {
     const fetchGuitarData = async () => {
       const startTime = performance.now();
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/guitar`);
+        
+        // Failsafe: Ignore 204 No Content responses if the backend is actively rewriting the JSON file
+        if (response.status === 204) return;
+        
         const data = await response.json();
         setGuitarData(data);
+        
         const endTime = performance.now();
         setApiLatency(Math.round(endTime - startTime));
         setRequestCount(prev => prev + 1);
@@ -30,7 +36,8 @@ export function useDashboardState() {
     return () => clearInterval(guitarInterval);
   }, []);
 
-  // 2. Calendar Auto-Rotation Engine
+  // Auto-rotate calendar views when idling on the home screen
+  // Month view holds for 60s, week view holds for 15s
   useEffect(() => {
     let rotationTimer;
     if (guitarData?.current_view === 'calendar') {
@@ -45,13 +52,14 @@ export function useDashboardState() {
     return () => clearTimeout(rotationTimer);
   }, [guitarData?.current_view, autoView]);
 
-  // 3. Google Calendar Polling (Every 10 minutes)
+  // Fetch and format Google Calendar events every 10 minutes
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/calendar`);
         const data = await response.json();
         const rawEvents = Array.isArray(data) ? data : (data.items || []);
+        
         const formattedEvents = rawEvents.map((item, index) => {
           const startObj = item.start || {};
           let startDate = startObj.dateTime ? new Date(startObj.dateTime) : new Date(startObj.date ? startObj.date + 'T00:00:00' : new Date());
@@ -73,13 +81,13 @@ export function useDashboardState() {
     return () => clearInterval(interval);
   }, []);
 
-  // 4. Clock Tick (Every 1 second)
+  // Real-time clock synchronization for the UI
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // 5. Open-Meteo Weather Polling (Every 15 minutes)
+  // Poll Open-Meteo weather API every 15 minutes to avoid rate limits
   useEffect(() => {
     const fetchWeather = async () => {
       try {
