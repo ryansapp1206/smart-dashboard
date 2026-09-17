@@ -1,3 +1,4 @@
+/* Interactive button/counter component with accent colors and accessibility focus rings */
 .counter {
   font-size: 16px;
   padding: 5px 10px;
@@ -17,6 +18,7 @@
   }
 }
 
+/* 3D Hero Stack: Positions and rotates the foundational logos in a perspective grid */
 .hero {
   position: relative;
 
@@ -56,6 +58,7 @@
   }
 }
 
+/* Main content wrapper: Flexbox container to center primary UI elements */
 #center {
   display: flex;
   flex-direction: column;
@@ -70,6 +73,7 @@
   }
 }
 
+/* Responsive flex layout for action cards/informational blocks */
 #next-steps {
   display: flex;
   border-top: 1px solid var(--border);
@@ -95,6 +99,7 @@
   }
 }
 
+/* Visual separator line for structural blocks */
 #docs {
   border-right: 1px solid var(--border);
 
@@ -104,6 +109,7 @@
   }
 }
 
+/* Action button list styling (handles layout and hover states for link buttons) */
 #next-steps ul {
   list-style: none;
   padding: 0;
@@ -136,6 +142,7 @@
     }
   }
 
+  /* Reflows action buttons into a 2-column grid on smaller screens */
   @media (max-width: 1024px) {
     margin-top: 20px;
     flex-wrap: wrap;
@@ -153,6 +160,7 @@
   }
 }
 
+/* Structural bottom padding to prevent lower elements from clipping off-screen */
 #spacer {
   height: 88px;
   border-top: 1px solid var(--border);
@@ -161,6 +169,7 @@
   }
 }
 
+/* Decorative structural pseudo-elements (generates corner tick marks along borders) */
 .ticks {
   position: relative;
   width: 100%;
