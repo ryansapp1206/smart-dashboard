@@ -12,20 +12,22 @@ import CalendarWeek from './views/CalendarWeek.jsx';
 import CalendarMonth from './views/CalendarMonth.jsx';
 
 export default function App() {
+  // Centralized state hub managing API polling and local data synchronization
   const { time, weather, events, guitarData, autoView, apiLatency, requestCount } = useDashboardState();
   const currentView = guitarData?.current_view || 'calendar';
 
+  // Dynamic router handling view transitions based on voice bridge payloads
   const renderScreen = () => {
     if (currentView === 'help') return <HelpScreen />;
     if (currentView === 'hub') return <ChordHub switches={guitarData?.switches} />;
     if (currentView === 'all_chords') return <ChordLibrary chords={guitarData?.chords} />;
     
-    // SAFETY CHECK: Only render SingleChord if the chord array explicitly exists in the database
+    // Render specific single chord view only if chord data is validated in the local database
     if (guitarData?.chords && guitarData.chords[currentView]) {
       return <SingleChord chordName={currentView} chordData={guitarData.chords[currentView]} />;
     }
 
-    // Default auto-rotating calendar fallback
+    // Default idle state: Auto-rotating calendar driven by the useDashboardState timer
     if (autoView === 'week') {
       return (
         <CalendarWeek 
@@ -52,6 +54,8 @@ export default function App() {
   return (
     <>
       {renderScreen()}
+      
+      {/* Global UI Overlays: Render persistently across all active views */}
       <ConfirmationModal pendingUpdate={guitarData?.pending_update} />
       <ListeningIndicator isListening={guitarData?.is_listening} />
       <VisualMetronome bpm={guitarData?.metronome_bpm} currentView={currentView} timerActive={guitarData?.timer_active} />
