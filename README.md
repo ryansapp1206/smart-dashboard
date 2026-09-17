@@ -2,6 +2,8 @@
 
 A voice-controlled dashboard built to run 24/7 on a dedicated Ubuntu thin client. It handles real-time schedule tracking, system telemetry, and a set of offline guitar practice tools. The entire stack runs locally without cloud dependencies for voice processing.
 
+![Dashboard Overview](assets/dashboard.jpg)
+
 ## Features
 
 ### Offline Voice Control
@@ -10,6 +12,12 @@ A voice-controlled dashboard built to run 24/7 on a dedicated Ubuntu thin client
 * **Action Confirmation:** Database updates trigger a verbal "Yes/No" modal to prevent background noise from accidentally overwriting data.
 
 ### Guitar Practice Suite
+
+<p align="center">
+  <img src="assets/chord-library.jpg" width="49%" alt="Chord Library" />
+  <img src="assets/chord-change-hub.jpg" width="49%" alt="Performance Matrix" />
+</p>
+
 * **Chord Hub:** Tracks chord transition speeds (BPM) with color-coded mastery thresholds.
 * **SVG Chord Library:** Generates fretboard diagrams directly from database arrays.
 * **Visual Metronome:** Syncs voice-commanded BPMs to a visual pulse and native Web Audio API clicks.
