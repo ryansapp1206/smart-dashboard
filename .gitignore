@@ -31,3 +31,6 @@ smart-dashboard/backend/guitar_data.json.tmp
 
 # Local planning docs
 TEST_PLAN.md
+
+# Live dashboard state (created from guitar_data.example.json on first run)
+smart-dashboard/backend/guitar_data.json

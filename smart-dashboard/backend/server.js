@@ -65,11 +65,18 @@ app.get('/api/calendar', async (req, res) => {
 // LOCAL STATE MANAGEMENT ROUTES
 // DATA_PATH lets tests point the server at a throwaway state file; production uses the default
 const dataPath = process.env.DATA_PATH ? path.resolve(process.env.DATA_PATH) : path.join(__dirname, 'guitar_data.json');
+const examplePath = path.join(__dirname, 'guitar_data.example.json');
 const backupPath = dataPath + '.bak';
 const tmpPath = dataPath + '.tmp';
 
 // Keys the voice bridge / UI are allowed to change
 const UPDATABLE_KEYS = ['current_view', 'is_listening', 'switches', 'pending_update', 'metronome_bpm', 'timer_active'];
+
+// The live state file is not tracked in git: create it from the starter copy on first run
+if (!fs.existsSync(dataPath) && fs.existsSync(examplePath)) {
+  fs.copyFileSync(examplePath, dataPath);
+  console.log('Created', path.basename(dataPath), 'from guitar_data.example.json');
+}
 
 // Read state from disk, falling back to the last good backup if the main file is corrupt
 function loadState() {
