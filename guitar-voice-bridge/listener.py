@@ -2,6 +2,7 @@ import pyaudio
 import numpy as np
 import requests
 import json
+import time
 from openwakeword.model import Model
 from vosk import Model as VoskModel, KaldiRecognizer
 
@@ -65,6 +66,8 @@ while True:
     try:
         audio_data = np.frombuffer(mic_stream.read(CHUNK, exception_on_overflow=False), dtype=np.int16)
     except Exception:
+        # Mic unplugged or busy: back off instead of spinning the CPU
+        time.sleep(0.5)
         continue
         
     # Check for the wake word
@@ -140,7 +143,9 @@ while True:
             print(f"Confirmation input: '{conf_text.strip()}'")
             
             # Process confirmation
-            if any(w in conf_text for w in [" yes ", " yeah ", " yep ", " sure ", " confirm ", " do it ", " absolutely ", " right ", " correct ", " yup "]):
+            # Reject anything containing a negation ("that's not right"), so a stray word can't overwrite data
+            negated = any(w in conf_text for w in [" no ", " not ", " nope ", " don't ", " dont ", " cancel ", " stop ", " wrong "])
+            if not negated and any(w in conf_text for w in [" yes ", " yeah ", " yep ", " sure ", " confirm ", " do it ", " absolutely ", " yup "]):
                 # Find the specific chord switch block and update its score
                 for sw in switches:
                     if (sw['from'] == result['c1'] and sw['to'] == result['c2']) or (sw['from'] == result['c2'] and sw['to'] == result['c1']):

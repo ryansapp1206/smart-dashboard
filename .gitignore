@@ -24,3 +24,7 @@ credentials.json
 .vscode/*
 !.vscode/extensions.json
 .DS_Store
+
+# Backend state-file safety copies
+smart-dashboard/backend/guitar_data.json.bak
+smart-dashboard/backend/guitar_data.json.tmp

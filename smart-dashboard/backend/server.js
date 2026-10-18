@@ -13,14 +13,21 @@ app.use(cors());
 app.use(express.json());
 
 // Google API Authentication securely loaded from .env
-const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
-const auth = new google.auth.GoogleAuth({
-  credentials,
-  scopes: ['https://www.googleapis.com/auth/calendar.events']
-});
+// A bad or missing key only disables the calendar route; local state routes keep working
+let auth = null;
+try {
+  const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+  auth = new google.auth.GoogleAuth({
+    credentials,
+    scopes: ['https://www.googleapis.com/auth/calendar.readonly']
+  });
+} catch (err) {
+  console.error('Google credentials unavailable, calendar route disabled:', err.message);
+}
 
 // CALENDAR API ROUTE
 app.get('/api/calendar', async (req, res) => {
+  if (!auth) return res.status(503).json({ error: 'Calendar credentials not configured' });
   const calendar = google.calendar({ version: 'v3', auth });
   try {
     const now = new Date();
@@ -57,61 +64,73 @@ app.get('/api/calendar', async (req, res) => {
 
 // LOCAL STATE MANAGEMENT ROUTES
 const dataPath = path.join(__dirname, 'guitar_data.json');
+const backupPath = dataPath + '.bak';
+const tmpPath = dataPath + '.tmp';
+
+// Keys the voice bridge / UI are allowed to change
+const UPDATABLE_KEYS = ['current_view', 'is_listening', 'switches', 'pending_update', 'metronome_bpm', 'timer_active'];
+
+// Read state from disk, falling back to the last good backup if the main file is corrupt
+function loadState() {
+  for (const file of [dataPath, backupPath]) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+      if (parsed && typeof parsed === 'object') return parsed;
+    } catch (err) {
+      console.error(`Could not read ${path.basename(file)}: ${err.message}`);
+    }
+  }
+  throw new Error('No readable state file');
+}
+
+// Atomic write: temp file + fsync + rename, so a crash or power cut never leaves a half-written file
+function saveState(state) {
+  const json = JSON.stringify(state, null, 2);
+  const fd = fs.openSync(tmpPath, 'w');
+  try {
+    fs.writeSync(fd, json);
+    fs.fsyncSync(fd);
+  } finally {
+    fs.closeSync(fd);
+  }
+  try { fs.copyFileSync(dataPath, backupPath); } catch (err) { /* no previous file yet */ }
+  fs.renameSync(tmpPath, dataPath);
+}
 
 // Fetch the current dashboard state
 app.get('/api/guitar', (req, res) => {
-  fs.readFile(dataPath, 'utf8', (err, data) => {
-    if (err) return res.status(500).send("Error reading guitar data");
-    try {
-        res.json(JSON.parse(data));
-    } catch (parseError) {
-        // Race condition safeguard: If file is read mid-write, return 204 (No Content) to prevent JSON parse crash
-        // TO-DO COMPLETELY REMOVE POSSIBILITY OF RACE CONDITION
-        res.status(204).send(); 
-    }
-  });
+  try {
+    res.json(loadState());
+  } catch (err) {
+    res.status(500).send("Error reading guitar data");
+  }
 });
 
 // Update the dashboard state based on Python Voice Bridge payloads
+// Synchronous read-merge-write keeps every update atomic with respect to other requests
 app.post('/api/guitar/update', (req, res) => {
-  fs.readFile(dataPath, 'utf8', (err, data) => {
-    if (err) return res.status(500).send("Error reading data layer");
+  try {
+    const guitarData = loadState();
+    const body = req.body || {};
 
-    let guitarData = JSON.parse(data);
-
-    // Selectively update state properties only if they exist in the incoming request
-    // TO-DO REFACTOR AT A LATER DATE
-    if (req.body.current_view) {
-      guitarData.current_view = req.body.current_view;
-    }
-    if (req.body.is_listening !== undefined) {
-      guitarData.is_listening = req.body.is_listening;
-    }
-    // Save the updated chord switch tracking array
-    if (req.body.switches !== undefined) {
-      guitarData.switches = req.body.switches;
-    }
-    // Handle the temporary confirmation modal state for UI popups
-    if (req.body.pending_update !== undefined) {
-      guitarData.pending_update = req.body.pending_update;
-    }
-    if (req.body.metronome_bpm !== undefined) {
-      guitarData.metronome_bpm = req.body.metronome_bpm;
-    }
-    // Handle practice timer boolean state
-    if (req.body.timer_active !== undefined) {
-      guitarData.timer_active = req.body.timer_active;
+    for (const key of UPDATABLE_KEYS) {
+      if (body[key] !== undefined) guitarData[key] = body[key];
     }
 
-    // Write the merged state back to the local JSON file
-    fs.writeFile(dataPath, JSON.stringify(guitarData, null, 2), (err) => {
-      if (err) return res.status(500).send("Error writing to data layer");
-      res.send({ status: "success" });
-    });
-  });
+    saveState(guitarData);
+    res.send({ status: "success" });
+  } catch (err) {
+    console.error('State update failed:', err.message);
+    res.status(500).send("Error updating data layer");
+  }
 });
 
+// Last-resort guards: log and keep the kiosk backend alive
+process.on('uncaughtException', (err) => console.error('Uncaught exception:', err));
+process.on('unhandledRejection', (err) => console.error('Unhandled rejection:', err));
+
 // Start the server
-app.listen(3001, () => {
-  console.log('Server listening on port 3001');
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
