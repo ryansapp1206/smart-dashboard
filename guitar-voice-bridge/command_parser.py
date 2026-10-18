@@ -159,10 +159,12 @@ def parse_intent(padded_text, current_switches):
                 return "error", f"Invalid BPM parsed ({target_bpm}); expected {MIN_BPM}-{MAX_BPM}."
 
     # VIEW NAVIGATION
+    # Leaving the hub stops the metronome (every non-hub view below sends metronome_bpm: 0);
+    # the hub itself leaves it running.
     # The library is checked before the hub: " chord list " must not be claimed by the hub's " list "
     elif any(w in padded_text for w in LIBRARY_WORDS):
         print("Action: Loading Chord Library")
-        return "standard", {"current_view": "all_chords"}
+        return "standard", {"current_view": "all_chords", "metronome_bpm": 0}
 
     elif any(w in padded_text for w in HUB_WORDS):
         print("Action: Loading Hub")
@@ -170,7 +172,7 @@ def parse_intent(padded_text, current_switches):
 
     elif any(w in padded_text for w in HELP_WORDS):
         print("Action: Loading Help Screen")
-        return "standard", {"current_view": "help"}
+        return "standard", {"current_view": "help", "metronome_bpm": 0}
 
     # DATABASE UPDATES
     # Target Syntax: "Update [Chord 1] to [Chord 2] to [Score]"
@@ -239,7 +241,7 @@ def parse_intent(padded_text, current_switches):
 
     elif any(w in padded_text for w in TEMPLATE_WORDS):
         print("Action: Loading Blank Template")
-        return "standard", {"current_view": "template"}   
+        return "standard", {"current_view": "template", "metronome_bpm": 0}
         
     # SINGLE CHORD FALLBACK
     # If no structural commands matched, check if the user just yelled a chord name.
@@ -257,6 +259,6 @@ def parse_intent(padded_text, current_switches):
         
         if identified_chord:
             print(f"Action: Loading {identified_chord} Chord")
-            return "standard", {"current_view": identified_chord}
+            return "standard", {"current_view": identified_chord, "metronome_bpm": 0}
         else:
             return "ignore", None
