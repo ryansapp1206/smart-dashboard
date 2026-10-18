@@ -28,3 +28,6 @@ credentials.json
 # Backend state-file safety copies
 smart-dashboard/backend/guitar_data.json.bak
 smart-dashboard/backend/guitar_data.json.tmp
+
+# Local planning docs
+TEST_PLAN.md

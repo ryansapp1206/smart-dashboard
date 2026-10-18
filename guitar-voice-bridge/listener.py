@@ -2,18 +2,30 @@ import pyaudio
 import numpy as np
 import requests
 import json
+import os
 import time
 from openwakeword.model import Model
 from vosk import Model as VoskModel, KaldiRecognizer
 
 # IMPORT THE LOGIC ENGINE
-from command_parser import parse_intent
+from command_parser import (parse_intent, clean_transcript, is_confirmed,
+                            build_command_grammar, build_confirmation_grammar)
 
 # MODEL INITIALIZATION
 owwModel = Model() # OpenWakeWord model for detecting wake word
 try:
     vosk_model = VoskModel("model") # Vosk model for full speech-to-text
     recognizer = KaldiRecognizer(vosk_model, 16000)
+    confirm_recognizer = recognizer
+    # EXPERIMENTAL, OFF BY DEFAULT: restrict what Vosk may hear to the words we actually use.
+    # Enable per recognizer with VOSK_COMMAND_GRAMMAR=1 / VOSK_CONFIRM_GRAMMAR=1 (e.g. in PM2's env).
+    if os.environ.get("VOSK_COMMAND_GRAMMAR") == "1":
+        recognizer = KaldiRecognizer(vosk_model, 16000, json.dumps(build_command_grammar()))
+        confirm_recognizer = recognizer
+        print("Command grammar enabled.")
+    if os.environ.get("VOSK_CONFIRM_GRAMMAR") == "1":
+        confirm_recognizer = KaldiRecognizer(vosk_model, 16000, json.dumps(build_confirmation_grammar()))
+        print("Confirmation grammar enabled.")
 except Exception as e:
     print("VOSK ERROR: Could not find the 'model' folder.")
     exit(1)
@@ -95,8 +107,7 @@ while True:
                 break 
             
         # Clean the transcript
-        spoken_text = json.loads(recognizer.FinalResult()).get("text", "").lower()
-        spoken_text = spoken_text.replace("hey jarvis", "").replace("jarvis", "").strip()
+        spoken_text = clean_transcript(json.loads(recognizer.FinalResult()).get("text", ""))
         print(f"Parsed input: '{spoken_text}'")
         
         if not spoken_text:
@@ -135,17 +146,15 @@ while True:
             for _ in range(60): 
                 chunk = mic_stream.read(CHUNK, exception_on_overflow=False)
                 conf_audio += chunk
-                if recognizer.AcceptWaveform(chunk):
+                if confirm_recognizer.AcceptWaveform(chunk):
                     break
             
-            conf_text = json.loads(recognizer.FinalResult()).get('text', '').lower()
-            conf_text = f" {conf_text.replace('hey jarvis', '').replace('jarvis', '').strip()} "
-            print(f"Confirmation input: '{conf_text.strip()}'")
+            conf_text = clean_transcript(json.loads(confirm_recognizer.FinalResult()).get('text', ''))
+            print(f"Confirmation input: '{conf_text}'")
             
             # Process confirmation
-            # Reject anything containing a negation ("that's not right"), so a stray word can't overwrite data
-            negated = any(w in conf_text for w in [" no ", " not ", " nope ", " don't ", " dont ", " cancel ", " stop ", " wrong "])
-            if not negated and any(w in conf_text for w in [" yes ", " yeah ", " yep ", " sure ", " confirm ", " do it ", " absolutely ", " yup "]):
+            # Only a clear yes confirms; any negation ("that's not right") vetoes it
+            if is_confirmed(conf_text):
                 # Find the specific chord switch block and update its score
                 for sw in switches:
                     if (sw['from'] == result['c1'] and sw['to'] == result['c2']) or (sw['from'] == result['c2'] and sw['to'] == result['c1']):
