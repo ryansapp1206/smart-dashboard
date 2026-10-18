@@ -63,7 +63,8 @@ app.get('/api/calendar', async (req, res) => {
 });
 
 // LOCAL STATE MANAGEMENT ROUTES
-const dataPath = path.join(__dirname, 'guitar_data.json');
+// DATA_PATH lets tests point the server at a throwaway state file; production uses the default
+const dataPath = process.env.DATA_PATH ? path.resolve(process.env.DATA_PATH) : path.join(__dirname, 'guitar_data.json');
 const backupPath = dataPath + '.bak';
 const tmpPath = dataPath + '.tmp';
 

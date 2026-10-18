@@ -88,7 +88,7 @@
       "from": "A",
       "to": "Dm",
       "bpm": 60,
-      "score": 50
+      "score": 51
     },
     {
       "from": "A",
@@ -235,7 +235,7 @@
       "score": 89
     }
   ],
-  "current_view": "calendar",
+  "current_view": "hub",
   "is_listening": false,
   "pending_update": null,
   "metronome_bpm": 0,

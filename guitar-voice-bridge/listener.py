@@ -1,44 +1,16 @@
-import pyaudio
-import numpy as np
-import requests
 import json
 import os
 import time
-from openwakeword.model import Model
-from vosk import Model as VoskModel, KaldiRecognizer
+import requests
 
 # IMPORT THE LOGIC ENGINE
 from command_parser import (parse_intent, clean_transcript, is_confirmed,
                             build_command_grammar, build_confirmation_grammar)
 
-# MODEL INITIALIZATION
-owwModel = Model() # OpenWakeWord model for detecting wake word
-try:
-    vosk_model = VoskModel("model") # Vosk model for full speech-to-text
-    recognizer = KaldiRecognizer(vosk_model, 16000)
-    confirm_recognizer = recognizer
-    # EXPERIMENTAL, OFF BY DEFAULT: restrict what Vosk may hear to the words we actually use.
-    # Enable per recognizer with VOSK_COMMAND_GRAMMAR=1 / VOSK_CONFIRM_GRAMMAR=1 (e.g. in PM2's env).
-    if os.environ.get("VOSK_COMMAND_GRAMMAR") == "1":
-        recognizer = KaldiRecognizer(vosk_model, 16000, json.dumps(build_command_grammar()))
-        confirm_recognizer = recognizer
-        print("Command grammar enabled.")
-    if os.environ.get("VOSK_CONFIRM_GRAMMAR") == "1":
-        confirm_recognizer = KaldiRecognizer(vosk_model, 16000, json.dumps(build_confirmation_grammar()))
-        print("Confirmation grammar enabled.")
-except Exception as e:
-    print("VOSK ERROR: Could not find the 'model' folder.")
-    exit(1)
-
-# AUDIO HARDWARE CONFIGURATION
-CHUNK = 1280
-RATE = 16000
-audio = pyaudio.PyAudio()
-# Open a continuous mono audio stream from the microphone
-mic_stream = audio.open(format=pyaudio.paInt16, channels=1, rate=RATE, input=True, frames_per_buffer=CHUNK)
-
-API_URL = "http://localhost:3001/api/guitar/update"
-GET_URL = "http://localhost:3001/api/guitar"
+# BACKEND LOCATION (override with BACKEND_URL, e.g. to point tests at a throwaway server)
+BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:3001")
+API_URL = f"{BACKEND_URL}/api/guitar/update"
+GET_URL = f"{BACKEND_URL}/api/guitar"
 
 # NETWORK HELPERS
 def update_backend(new_data):
@@ -50,127 +22,176 @@ def update_backend(new_data):
     except Exception as e:
         print(f"Backend Sync Failure: {e}")
 
-# Ensure UI starts in a resting state
-update_backend({"is_listening": False, "pending_update": None})
+def handle_command(spoken_text, get_confirmation):
+    """
+    Runs one cleaned transcript through the logic engine and applies the result to the backend.
+    Has no audio dependencies: get_confirmation is a callable that returns the cleaned yes/no
+    transcript (the microphone in production, a plain string in tests).
 
-def flush_microphone():
-    """Clears the audio buffer and resets the wake word model to prevent false triggers from background noise or echoes."""
-    update_backend({"is_listening": False, "pending_update": None})
-    print("Warming up model and flushing buffer...")
-    
-    if mic_stream.get_read_available() > 0:
-        mic_stream.read(mic_stream.get_read_available(), exception_on_overflow=False)
-        
-    owwModel.reset()
-    
-    # Process a few empty chunks to let the model settle
-    for _ in range(15):
-        audio_data = np.frombuffer(mic_stream.read(CHUNK, exception_on_overflow=False), dtype=np.int16)
-        owwModel.predict(audio_data)
-        
-    print("Listening for wake word...")
+    Returns a short status string: "empty", "backend_unreachable", "standard", "confirmed",
+    "cancelled", "error" or "ignore".
+    """
+    if not spoken_text:
+        return "empty"
 
-# MAIN LISTENING LOOP
-print("Listener active. Waiting for wake word...")
+    padded_text = f" {spoken_text} "
 
-while True:
-    # Continually read audio chunks
+    # FETCH CURRENT STATE BEFORE PARSING (Protected against backend crashes)
     try:
-        audio_data = np.frombuffer(mic_stream.read(CHUNK, exception_on_overflow=False), dtype=np.int16)
-    except Exception:
-        # Mic unplugged or busy: back off instead of spinning the CPU
-        time.sleep(0.5)
-        continue
-        
-    # Check for the wake word
-    prediction = owwModel.predict(audio_data)
-    
-    # If confidence threshold is met, activate command listener
-    if prediction.get('hey_jarvis', 0.0) > 0.75:
-        print("Wake word detected.")
-        
-        # Clear any leftover audio to ensure a clean command recording
+        current_state = requests.get(GET_URL, timeout=2).json()
+        switches = current_state.get('switches', [])
+    except Exception as e:
+        print("Backend unreachable, aborting command.")
+        return "backend_unreachable"
+
+    # SEND TO THE LOGIC ENGINE (Returns what action to take)
+    action_type, result = parse_intent(padded_text, switches)
+
+    # EXECUTE THE ACTION
+    if action_type == "standard":
+        # Simple state updates
+        update_backend(result)
+        if "current_view" in result:
+            print(f"State updated: {result['current_view']}")
+        return "standard"
+
+    elif action_type == "requires_confirmation":
+        # Two-step action
+        print(f"Action: Initiating update for {result['c1']} <-> {result['c2']} to {result['score']} bpm")
+        update_backend(result['payload']) # Triggers confirmation modal on UI
+
+        # Briefly take over the microphone to listen for Yes or No
+        print("Awaiting confirmation...")
+        conf_text = get_confirmation()
+        print(f"Confirmation input: '{conf_text}'")
+
+        # Process confirmation
+        # Only a clear yes confirms; any negation ("that's not right") vetoes it
+        if is_confirmed(conf_text):
+            # Find the specific chord switch block and update its score
+            for sw in switches:
+                if (sw['from'] == result['c1'] and sw['to'] == result['c2']) or (sw['from'] == result['c2'] and sw['to'] == result['c1']):
+                    sw['score'] = result['score']
+                    break
+            update_backend({"switches": switches, "pending_update": None})
+            print("Update confirmed.")
+            return "confirmed"
+        else:
+            # Cancel the action and close the modal
+            update_backend({"pending_update": None})
+            print("Update cancelled.")
+            return "cancelled"
+
+    elif action_type == "error":
+        print(result)
+        return "error"
+
+    print("Action: No match found. Ignoring.")
+    return "ignore"
+
+def main():
+    # Audio / model imports live here so the module can be imported (and tested) without hardware
+    import numpy as np
+    import pyaudio
+    from openwakeword.model import Model
+    from vosk import Model as VoskModel, KaldiRecognizer
+
+    # MODEL INITIALIZATION
+    owwModel = Model() # OpenWakeWord model for detecting wake word
+    try:
+        vosk_model = VoskModel("model") # Vosk model for full speech-to-text
+        recognizer = KaldiRecognizer(vosk_model, 16000)
+        confirm_recognizer = recognizer
+        # EXPERIMENTAL, OFF BY DEFAULT: restrict what Vosk may hear to the words we actually use.
+        # Enable per recognizer with VOSK_COMMAND_GRAMMAR=1 / VOSK_CONFIRM_GRAMMAR=1 (e.g. in PM2's env).
+        if os.environ.get("VOSK_COMMAND_GRAMMAR") == "1":
+            recognizer = KaldiRecognizer(vosk_model, 16000, json.dumps(build_command_grammar()))
+            confirm_recognizer = recognizer
+            print("Command grammar enabled.")
+        if os.environ.get("VOSK_CONFIRM_GRAMMAR") == "1":
+            confirm_recognizer = KaldiRecognizer(vosk_model, 16000, json.dumps(build_confirmation_grammar()))
+            print("Confirmation grammar enabled.")
+    except Exception as e:
+        print("VOSK ERROR: Could not find the 'model' folder.")
+        exit(1)
+
+    # AUDIO HARDWARE CONFIGURATION
+    CHUNK = 1280
+    RATE = 16000
+    audio = pyaudio.PyAudio()
+    # Open a continuous mono audio stream from the microphone
+    mic_stream = audio.open(format=pyaudio.paInt16, channels=1, rate=RATE, input=True, frames_per_buffer=CHUNK)
+
+    # Ensure UI starts in a resting state
+    update_backend({"is_listening": False, "pending_update": None})
+
+    def flush_microphone():
+        """Clears the audio buffer and resets the wake word model to prevent false triggers from background noise or echoes."""
+        update_backend({"is_listening": False, "pending_update": None})
+        print("Warming up model and flushing buffer...")
+
         if mic_stream.get_read_available() > 0:
             mic_stream.read(mic_stream.get_read_available(), exception_on_overflow=False)
-            
-        # Trigger the glowing listening indicator on the React UI
-        update_backend({"is_listening": True})
-        print("Listening for command...")
-        
-        # Record the spoken command (max ~6 seconds / 80 chunks)
-        command_audio = b''
-        for _ in range(80): 
+
+        owwModel.reset()
+
+        # Process a few empty chunks to let the model settle
+        for _ in range(15):
+            audio_data = np.frombuffer(mic_stream.read(CHUNK, exception_on_overflow=False), dtype=np.int16)
+            owwModel.predict(audio_data)
+
+        print("Listening for wake word...")
+
+    def listen_for_confirmation():
+        """Records a short Yes/No answer and returns the cleaned transcript."""
+        for _ in range(60):
             chunk = mic_stream.read(CHUNK, exception_on_overflow=False)
-            command_audio += chunk
-            # Break early if Vosk detects the end of a sentence
-            if recognizer.AcceptWaveform(chunk):
-                break 
-            
-        # Clean the transcript
-        spoken_text = clean_transcript(json.loads(recognizer.FinalResult()).get("text", ""))
-        print(f"Parsed input: '{spoken_text}'")
-        
-        if not spoken_text:
-            flush_microphone()
-            continue
-            
-        padded_text = f" {spoken_text} "
+            if confirm_recognizer.AcceptWaveform(chunk):
+                break
+        return clean_transcript(json.loads(confirm_recognizer.FinalResult()).get('text', ''))
 
-        # FETCH CURRENT STATE BEFORE PARSING (Protected against backend crashes)
+    # MAIN LISTENING LOOP
+    print("Listener active. Waiting for wake word...")
+
+    while True:
+        # Continually read audio chunks
         try:
-            current_state = requests.get(GET_URL, timeout=2).json()
-            switches = current_state.get('switches', [])
-        except Exception as e:
-            print("Backend unreachable, aborting command.")
-            flush_microphone()
+            audio_data = np.frombuffer(mic_stream.read(CHUNK, exception_on_overflow=False), dtype=np.int16)
+        except Exception:
+            # Mic unplugged or busy: back off instead of spinning the CPU
+            time.sleep(0.5)
             continue
 
-        # SEND TO THE LOGIC ENGINE (Returns what action to take)
-        action_type, result = parse_intent(padded_text, switches)
+        # Check for the wake word
+        prediction = owwModel.predict(audio_data)
 
-        # EXECUTE THE ACTION
-        if action_type == "standard":
-            # Simple state updates
-            update_backend(result)
-            if "current_view" in result:
-                print(f"State updated: {result['current_view']}")
-                
-        elif action_type == "requires_confirmation":
-            # Two-step action
-            print(f"Action: Initiating update for {result['c1']} <-> {result['c2']} to {result['score']} bpm")
-            update_backend(result['payload']) # Triggers confirmation modal on UI
-            
-            # Briefly take over the microphone to listen for Yes or No
-            print("Awaiting confirmation...")
-            conf_audio = b''
-            for _ in range(60): 
+        # If confidence threshold is met, activate command listener
+        if prediction.get('hey_jarvis', 0.0) > 0.75:
+            print("Wake word detected.")
+
+            # Clear any leftover audio to ensure a clean command recording
+            if mic_stream.get_read_available() > 0:
+                mic_stream.read(mic_stream.get_read_available(), exception_on_overflow=False)
+
+            # Trigger the glowing listening indicator on the React UI
+            update_backend({"is_listening": True})
+            print("Listening for command...")
+
+            # Record the spoken command (max ~6 seconds / 80 chunks)
+            for _ in range(80):
                 chunk = mic_stream.read(CHUNK, exception_on_overflow=False)
-                conf_audio += chunk
-                if confirm_recognizer.AcceptWaveform(chunk):
+                # Break early if Vosk detects the end of a sentence
+                if recognizer.AcceptWaveform(chunk):
                     break
-            
-            conf_text = clean_transcript(json.loads(confirm_recognizer.FinalResult()).get('text', ''))
-            print(f"Confirmation input: '{conf_text}'")
-            
-            # Process confirmation
-            # Only a clear yes confirms; any negation ("that's not right") vetoes it
-            if is_confirmed(conf_text):
-                # Find the specific chord switch block and update its score
-                for sw in switches:
-                    if (sw['from'] == result['c1'] and sw['to'] == result['c2']) or (sw['from'] == result['c2'] and sw['to'] == result['c1']):
-                        sw['score'] = result['score']
-                        break
-                update_backend({"switches": switches, "pending_update": None})
-                print("Update confirmed.")
-            else:
-                # Cancel the action and close the modal
-                update_backend({"pending_update": None})
-                print("Update cancelled.")
-                
-        elif action_type == "error":
-            print(result)
-        elif action_type == "ignore":
-            print("Action: No match found. Ignoring.")
-            
-        # Reset the audio environment for the next command
-        flush_microphone()
+
+            # Clean the transcript
+            spoken_text = clean_transcript(json.loads(recognizer.FinalResult()).get("text", ""))
+            print(f"Parsed input: '{spoken_text}'")
+
+            handle_command(spoken_text, listen_for_confirmation)
+
+            # Reset the audio environment for the next command
+            flush_microphone()
+
+if __name__ == "__main__":
+    main()
