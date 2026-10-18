@@ -1,0 +1,189 @@
+{
+  "_note": "Commands the owner spoke to Jarvis, as Vosk transcribed them (from the PM2 voice-bridge log), each labelled by hand with the intended outcome. Only command attempts belong here: no background conversation. Add a line whenever a new mishearing of a command shows up. Outcome format is described in tests/helpers.py.",
+  "cases": [
+    {
+      "say": "dashboard",
+      "expect": "view:calendar"
+    },
+    {
+      "say": "the dashboard",
+      "expect": "view:calendar"
+    },
+    {
+      "say": "home",
+      "expect": "view:calendar"
+    },
+    {
+      "say": "dash for",
+      "expect": "view:calendar"
+    },
+    {
+      "say": "stop",
+      "expect": "view:calendar"
+    },
+    {
+      "say": "chord changes",
+      "expect": "view:hub"
+    },
+    {
+      "say": "show chord changes",
+      "expect": "view:hub"
+    },
+    {
+      "say": "showing chord changes",
+      "expect": "view:hub"
+    },
+    {
+      "say": "org chart",
+      "expect": "view:hub"
+    },
+    {
+      "say": "cord chart",
+      "expect": "view:hub"
+    },
+    {
+      "say": "core chart",
+      "expect": "view:hub"
+    },
+    {
+      "say": "cord change chart",
+      "expect": "view:hub"
+    },
+    {
+      "say": "court changing chart",
+      "expect": "view:hub"
+    },
+    {
+      "say": "show core changing chart",
+      "expect": "view:hub"
+    },
+    {
+      "say": "show poor change and chart",
+      "expect": "view:hub"
+    },
+    {
+      "say": "show all chords",
+      "expect": "view:all_chords"
+    },
+    {
+      "say": "show me all chords",
+      "expect": "view:all_chords"
+    },
+    {
+      "say": "show all cores",
+      "expect": "view:all_chords"
+    },
+    {
+      "say": "cord list",
+      "expect": "view:all_chords"
+    },
+    {
+      "say": "help",
+      "expect": "view:help"
+    },
+    {
+      "say": "what can you do",
+      "expect": "view:help"
+    },
+    {
+      "say": "pleasure commands",
+      "expect": "view:help"
+    },
+    {
+      "say": "set metronome to sixty",
+      "expect": "bpm:60"
+    },
+    {
+      "say": "the set metronome to sixty",
+      "expect": "bpm:60"
+    },
+    {
+      "say": "set metronome to eighty",
+      "expect": "bpm:80"
+    },
+    {
+      "say": "said metronome to eighty five",
+      "expect": "bpm:85"
+    },
+    {
+      "say": "set metrodome too eighty five",
+      "expect": "bpm:85"
+    },
+    {
+      "say": "set metrodome to sixty",
+      "expect": "bpm:60"
+    },
+    {
+      "say": "set bedroom to sixty",
+      "expect": "bpm:60"
+    },
+    {
+      "say": "set match around to sixty",
+      "expect": "bpm:60"
+    },
+    {
+      "say": "set metronome to sixteen",
+      "expect": "error"
+    },
+    {
+      "say": "stop metronome",
+      "expect": "stop"
+    },
+    {
+      "say": "stop metro",
+      "expect": "stop"
+    },
+    {
+      "say": "stop metro know",
+      "expect": "stop"
+    },
+    {
+      "say": "start timer",
+      "expect": "timer"
+    },
+    {
+      "say": "update a to a minor to seventy",
+      "expect": "confirm:A,Am,70"
+    },
+    {
+      "say": "update a to a minor to sixty nine",
+      "expect": "confirm:A,Am,69"
+    },
+    {
+      "say": "update a to eat to sixty nine",
+      "expect": "confirm:A,E,69"
+    },
+    {
+      "say": "update a to the to sixty eight",
+      "expect": "error"
+    },
+    {
+      "say": "update seem to be minor to sixty eight",
+      "expect": "error"
+    },
+    {
+      "say": "change a to the minor to sixty five",
+      "expect": "ignore"
+    },
+    {
+      "say": "a",
+      "expect": "view:A"
+    },
+    {
+      "say": "see",
+      "expect": "view:C"
+    },
+    {
+      "say": "show a",
+      "expect": "view:A"
+    },
+    {
+      "say": "show me that a chord",
+      "expect": "view:A"
+    },
+    {
+      "say": "the cord",
+      "expect": "view:D"
+    }
+  ]
+}
